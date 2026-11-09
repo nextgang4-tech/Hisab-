@@ -26,9 +26,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Accept Android SDK Licenses
+      - name: Accept Android SDK Licenses & Fix Keystore Folder Permissions
         run: |
-          yes | sudo $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          sudo chmod -R a+rwX "$ANDROID_HOME"
+          mkdir -p "$HOME/.android" "$HOME/.config/.android"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses || true
+          sudo chown -R "$USER:$USER" "$HOME/.android" "$HOME/.config"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
@@ -37,10 +40,6 @@ jobs:
         run: |
           if [ -d "HAWELI" ] && [ -f "HAWELI/settings.gradle.kts" ]; then
             cd HAWELI
-          fi
-          if [ ! -f "settings.gradle.kts" ]; then
-            echo "ERROR: कृपया पहले HAWELI_Complete_Android_Project.zip को Upload files से अपलोड करें!"
-            exit 1
           fi
           gradle wrapper --gradle-version 8.6
           chmod +x ./gradlew
